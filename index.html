@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Моя валентинка</title>
+<meta name="theme-color" content="#ffd2e2">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Моя валентинка">
+<meta property="og:description" content="Открой, тут кое-что есть">
+<meta property="og:image" content="https://garist0308.github.io/valentine/img/cat-1.png">
+<link rel="icon" href="img/cat-1.png">
+<style>
+  :root{
+    --pink-top:#ffdce9;
+    --pink-bottom:#ffbfd6;
+    --crimson:#c9185c;
+    --btn:#e6386f;
+    --btn-dark:#c92a5c;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:linear-gradient(180deg,var(--pink-top) 0%,var(--pink-bottom) 100%);
+    color:var(--crimson);
+    overflow:hidden;
+    position:fixed;
+    inset:0;
+    -webkit-user-select:none;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    -webkit-touch-callout:none;
+    touch-action:manipulation;
+  }
+
+  /* ───── фоновые сердечки ───── */
+  .hearts{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+  .hearts svg{
+    position:absolute;
+    bottom:-60px;
+    fill:#e85c8a;
+    animation:float linear infinite;
+    will-change:transform;
+  }
+  @keyframes float{
+    from{transform:translateY(0) rotate(0deg)}
+    to{transform:translateY(-115vh) rotate(var(--spin))}
+  }
+
+  /* ───── экраны ───── */
+  main{
+    position:relative;
+    z-index:1;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));
+  }
+  .screen{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:clamp(12px,3.5vh,28px);
+    width:100%;
+    max-width:520px;
+    height:100%;
+  }
+  /* без fill-mode: при both экран навсегда остаётся в transform первого кадра,
+     если анимация не успела отыграть (неотрисованная вкладка) */
+  .screen.active{display:flex;animation:pop .45s cubic-bezier(.2,.9,.3,1.2)}
+  @keyframes pop{
+    from{opacity:0;transform:scale(.9)}
+    to{opacity:1;transform:none}
+  }
+
+  h1{
+    margin:0;
+    font-size:clamp(21px,6.4vw,32px);
+    font-weight:800;
+    text-align:center;
+    line-height:1.25;
+    text-shadow:0 1px 0 rgba(255,255,255,.55);
+  }
+
+  .cat{
+    width:min(62vw,290px);
+    max-height:46vh;
+    object-fit:contain;
+    pointer-events:none;
+    animation:bob 3.4s ease-in-out infinite;
+    filter:drop-shadow(0 6px 10px rgba(201,24,92,.14));
+  }
+  @keyframes bob{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-9px)}
+  }
+
+  /* ───── кнопки ───── */
+  .row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:clamp(18px,8vw,54px);
+    min-height:52px;
+  }
+  .btn{
+    appearance:none;
+    border:none;
+    font:inherit;
+    font-size:clamp(16px,4.6vw,19px);
+    font-weight:700;
+    color:#fff;
+    background:var(--btn);
+    padding:13px 34px;
+    border-radius:6px;
+    cursor:pointer;
+    box-shadow:0 3px 0 var(--btn-dark);
+    touch-action:manipulation;
+    transition:transform .08s ease;
+  }
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--btn-dark)}
+
+  /* «Нет», сорвавшаяся с места */
+  .btn.loose{
+    position:fixed;
+    margin:0;
+    z-index:5;
+    transition:left .18s cubic-bezier(.2,.9,.3,1.3),top .18s cubic-bezier(.2,.9,.3,1.3);
+  }
+  /* до побега распорки нет вовсе: иначе она была бы flex-элементом
+     нулевой ширины и «Да!» сдвинулась бы в момент подмены */
+  .spacer{display:none}
+
+  .final-line{
+    margin:0;
+    font-size:clamp(19px,5.6vw,27px);
+    font-weight:800;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<div class="hearts" id="hearts"></div>
+
+<main>
+  <section class="screen active" id="s1">
+    <h1>Машенька, ты меня любишь?</h1>
+    <img class="cat" src="img/cat-1.png" alt="Котик машет лапкой">
+    <div class="row">
+      <button class="btn" id="yes1">Да!</button>
+      <span class="spacer" id="spacer"></span>
+      <button class="btn" id="no1">Нет</button>
+    </div>
+  </section>
+
+  <section class="screen" id="s2">
+    <h1>Ты уверена?</h1>
+    <img class="cat" src="img/cat-2.png" alt="Котик плачет">
+    <div class="row">
+      <button class="btn" id="no2">Нет</button>
+    </div>
+  </section>
+
+  <section class="screen" id="s3">
+    <h1>Ты меня любишь?????</h1>
+    <img class="cat" src="img/cat-3.png" alt="Котик умоляет">
+    <div class="row">
+      <button class="btn" id="yes3">Да!</button>
+    </div>
+  </section>
+
+  <section class="screen" id="s4">
+    <img class="cat" src="img/cat-4.png" alt="Котик обнимает сердечко">
+    <p class="final-line">Машенька, я тебя тоже люблю))!</p>
+  </section>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  var HEART = 'M12 21s-7.5-4.7-9.6-9A5.4 5.4 0 0 1 12 6.3 5.4 5.4 0 0 1 21.6 12c-2.1 4.3-9.6 9-9.6 9z';
+  var DODGES = 3;          // столько раз «Нет» убегает, на четвёртый — даётся поймать
+  var EDGE = 12;           // отступ от краёв экрана
+
+  /* ───── фоновые сердечки ───── */
+  function sprinkleHearts(){
+    var box = document.getElementById('hearts');
+    var ns = 'http://www.w3.org/2000/svg';
+    for (var i = 0; i < 22; i++){
+      var svg = document.createElementNS(ns, 'svg');
+      var size = 10 + Math.random() * 20;
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('width', size);
+      svg.setAttribute('height', size);
+      var p = document.createElementNS(ns, 'path');
+      p.setAttribute('d', HEART);
+      svg.appendChild(p);
+      svg.style.left = (Math.random() * 96) + 'vw';
+      svg.style.opacity = (0.18 + Math.random() * 0.4).toFixed(2);
+      svg.style.animationDuration = (9 + Math.random() * 11) + 's';
+      svg.style.animationDelay = (-Math.random() * 18) + 's';
+      svg.style.setProperty('--spin', (Math.random() * 120 - 60) + 'deg');
+      box.appendChild(svg);
+    }
+  }
+  sprinkleHearts();
+
+  /* ───── переключение экранов ───── */
+  function show(id){
+    var list = document.querySelectorAll('.screen');
+    for (var i = 0; i < list.length; i++) list[i].classList.remove('active');
+    document.getElementById(id).classList.add('active');
+    // сбежавшая «Нет» живёт в body, поэтому сама со сменой экрана не исчезнет
+    if (id !== 's1') noBtn.style.display = 'none';
+  }
+
+  /* ───── убегающая «Нет» ───── */
+  var noBtn  = document.getElementById('no1');
+  var spacer = document.getElementById('spacer');
+  var used = 0;            // сколько раз уже убежала
+  var swallow = false;     // проглотить click, прилетевший следом за побегом
+  var swallowTimer = 0;
+
+  function headingBottom(){
+    var h = document.querySelector('.screen.active h1');
+    return h ? h.getBoundingClientRect().bottom + 10 : 60;
+  }
+
+  function cutLoose(rect){
+    if (noBtn.classList.contains('loose')) return;
+    // распоркой держим «Да!» на месте, чтобы она не прыгала следом
+    spacer.style.width  = rect.width + 'px';
+    spacer.style.height = rect.height + 'px';
+    spacer.style.display = 'block';
+    noBtn.style.left = rect.left + 'px';
+    noBtn.style.top  = rect.top + 'px';
+    noBtn.style.width = rect.width + 'px';
+    noBtn.classList.add('loose');
+    // в body: внутри анимируемой секции position:fixed считался бы от неё,
+    // а не от экрана, и кнопка прыгала бы на пару пикселей
+    document.body.appendChild(noBtn);
+  }
+
+  function leap(from){
+    var rect = noBtn.getBoundingClientRect();
+    cutLoose(rect);
+
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var minY = headingBottom();
+    var maxX = Math.max(EDGE, vw - rect.width - EDGE);
+    var maxY = Math.max(minY, vh - rect.height - EDGE);
+    var wasX = rect.left + rect.width / 2;
+    var wasY = rect.top + rect.height / 2;
+    var enough = Math.min(vw, vh) * 0.5;
+
+    // «Да!» нельзя накрывать: иначе её не нажать, да и выглядит как поломка
+    var yes = document.getElementById('yes1').getBoundingClientRect();
+    var KEEP = 10;
+    function hitsYes(x, y){
+      return x < yes.right + KEEP && x + rect.width  > yes.left - KEEP &&
+             y < yes.bottom + KEEP && y + rect.height > yes.top  - KEEP;
+    }
+
+    var best = null, bestScore = -1, fallback = null;
+    for (var i = 0; i < 60; i++){
+      var x = EDGE + Math.random() * (maxX - EDGE);
+      var y = minY + Math.random() * (maxY - minY);
+      if (!fallback) fallback = {x:x, y:y};
+      if (hitsYes(x, y)) continue;
+      var cx = x + rect.width / 2, cy = y + rect.height / 2;
+      // далеко и от прежнего места, и от пальца
+      var score = Math.min(
+        Math.hypot(cx - wasX, cy - wasY),
+        from ? Math.hypot(cx - from.x, cy - from.y) : Infinity
+      );
+      if (score > bestScore){ bestScore = score; best = {x:x, y:y}; }
+      if (score > enough) break;
+    }
+    if (!best) best = fallback;
+
+    noBtn.style.left = best.x + 'px';
+    noBtn.style.top  = best.y + 'px';
+    if (noBtn.animate){
+      noBtn.animate(
+        [{transform:'scale(1)'},{transform:'scale(.82) rotate(-7deg)'},{transform:'scale(1)'}],
+        {duration:260, easing:'ease-out'}
+      );
+    }
+  }
+
+  function runAway(from){
+    used++;
+    swallow = true;
+    clearTimeout(swallowTimer);
+    swallowTimer = setTimeout(function(){ swallow = false; }, 500);
+    leap(from);
+  }
+
+  // палец: ловим касание ДО того, как оно станет нажатием, и уводим кнопку
+  noBtn.addEventListener('pointerdown', function(e){
+    if (used < DODGES){
+      e.preventDefault();
+      runAway({x:e.clientX, y:e.clientY});
+    } else {
+      // лимит побегов исчерпан: это честное нажатие, даже если предыдущий
+      // тап был секунду назад — снимаем защиту, иначе съест клик
+      swallow = false;
+      clearTimeout(swallowTimer);
+    }
+  }, {passive:false});
+
+  // мышь: убегает уже от подведённого курсора
+  noBtn.addEventListener('pointerenter', function(e){
+    if (e.pointerType === 'mouse' && used < DODGES) runAway({x:e.clientX, y:e.clientY});
+  });
+
+  noBtn.addEventListener('click', function(e){
+    if (swallow){ e.preventDefault(); return; }
+    show('s2');
+  });
+
+  // после поворота экрана кнопка не должна оказаться за его границей
+  window.addEventListener('resize', function(){
+    if (!noBtn.classList.contains('loose')) return;
+    var r = noBtn.getBoundingClientRect();
+    var x = Math.min(parseFloat(noBtn.style.left) || 0, window.innerWidth  - r.width  - EDGE);
+    var y = Math.min(parseFloat(noBtn.style.top)  || 0, window.innerHeight - r.height - EDGE);
+    noBtn.style.left = Math.max(EDGE, x) + 'px';
+    noBtn.style.top  = Math.max(EDGE, y) + 'px';
+  });
+
+  /* ───── остальные кнопки ───── */
+  document.getElementById('yes1').addEventListener('click', function(){ finale(); });
+  document.getElementById('no2').addEventListener('click', function(){ show('s3'); });
+  document.getElementById('yes3').addEventListener('click', function(){ finale(); });
+
+  /* ───── финал ───── */
+  function finale(){
+    show('s4');
+    burst();
+  }
+
+  function burst(){
+    var box = document.getElementById('hearts');
+    var ns = 'http://www.w3.org/2000/svg';
+    for (var i = 0; i < 34; i++){
+      (function(n){
+        setTimeout(function(){
+          var svg = document.createElementNS(ns, 'svg');
+          var size = 16 + Math.random() * 28;
+          svg.setAttribute('viewBox', '0 0 24 24');
+          svg.setAttribute('width', size);
+          svg.setAttribute('height', size);
+          var p = document.createElementNS(ns, 'path');
+          p.setAttribute('d', HEART);
+          svg.appendChild(p);
+          svg.style.left = (Math.random() * 94) + 'vw';
+          svg.style.opacity = (0.45 + Math.random() * 0.5).toFixed(2);
+          svg.style.animationDuration = (4.5 + Math.random() * 3.5) + 's';
+          svg.style.animationDelay = '0s';
+          svg.style.setProperty('--spin', (Math.random() * 160 - 80) + 'deg');
+          box.appendChild(svg);
+          setTimeout(function(){ svg.remove(); }, 9000);
+        }, n * 70);
+      })(i);
+    }
+  }
+})();
+</script>
+</body>
+</html>
